@@ -7,12 +7,13 @@ def init_db():
     conn = sqlite3.connect('users.db')
     c = conn.cursor()
     c.execute('CREATE TABLE IF NOT EXISTS users (username TEXT, password TEXT)')
-    c.execute('INSERT INTO users VALUES ("admin", "FLAG{BackdoorSQL}")')
+    c.execute('INSERT OR IGNORE INTO users VALUES ("admin", "FLAG{BackdoorSQL}")')
     conn.commit()
     conn.close()
 
 @app.route('/')
 def index():
+    init_db()  # Run on first request to ensure DB exists
     return render_template('login.html')
 
 @app.route('/login', methods=['POST'])
@@ -26,9 +27,8 @@ def login():
     result = c.fetchone()
     conn.close()
     if result:
-        return "Logged in! " + result[1]  # Reveals flag
+        return "Logged in! " + result[1]
     return "Login failed."
 
 if __name__ == '__main__':
-    init_db()
     app.run(host='0.0.0.0', port=8000)
